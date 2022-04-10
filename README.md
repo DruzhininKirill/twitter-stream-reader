@@ -2,7 +2,6 @@
 
 Twitter-stream-reader is a simple python script that allows dumping tweets from Twitter Streaming API to csv.
 
-
 ## Usage
 
 local
