@@ -44,21 +44,23 @@ async def main():
     rows = []
     asyncio.create_task(read_stream(Settings.MAX_READ_TIME_SEC))
     while len(rows) < Settings.MAX_TWEETS:
-        tweet = await queue.get()
-        if not tweet:
+        raw_tweet = await queue.get()
+        if not raw_tweet:
             break
         try:
-            raw_tweet = orjson.loads(tweet)
+            tweet = orjson.loads(raw_tweet)
         except orjson.JSONDecodeError:
             logger.warning("Error on serializing tweet. Skip...")
             continue
-        logger.debug(f"Got: {raw_tweet}")
-        rows.append(parse_tweet(raw_tweet))
+        logger.debug(f"Got: {tweet}")
+        rows.append(parse_tweet(tweet))
 
     if rows:
         df = pd.DataFrame(rows)
         df = df.sort_values(by=["user_created_at", "user_id", "created_at"])
-        df.to_csv(Settings.OUTPUT_PATH, sep=Settings.DELIMITER, index=False)
+        df.to_csv(
+            f"{Settings.OUTPUT_PATH}/data.csv", sep=Settings.DELIMITER, index=False
+        )
     logger.info(f"Completed. Got {len(rows)} tweets!")
 
 
@@ -70,7 +72,7 @@ async def read_tweets(
     client = httpx.AsyncClient(auth=auth)
     async with client.stream("GET", stream_url, params=params) as r:
         logger.debug("Connection established. Reading tweets...")
-        async for tweet in r.aiter_bytes():
+        async for tweet in r.aiter_lines():
             if tweet == EMPTY_CARRIAGE:
                 logger.warning(f" No tweets on: {topic} received. Wait...")
             else:
