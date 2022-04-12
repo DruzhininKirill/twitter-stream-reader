@@ -9,7 +9,7 @@ from authlib.integrations.httpx_client import OAuth1Auth
 from settings import Settings
 from utils import parse_tweet
 
-EMPTY_CARRIAGE = b"\r\n"
+EMPTY_CARRIAGE = "\n"
 
 logging.basicConfig(level=Settings.LOG_LEVEL)
 logger = logging.getLogger("twitter")
