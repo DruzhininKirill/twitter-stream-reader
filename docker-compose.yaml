@@ -1,0 +1,42 @@
+version: "3.5"
+
+services:
+  db:
+    image: postgres:11
+    volumes:
+      - ./postgres-data:/var/lib/postgresql/data
+    networks:
+      - container_localnet
+    ports:
+      - 5434:5432
+    env_file: .env
+
+
+  service:
+    build:
+      context: .
+    networks:
+      - container_localnet
+    volumes:
+      - ./src:/opt/app/src
+    ports:
+    - 8003:8000
+    env_file: .env
+    depends_on:
+      - db
+
+  redis:
+    image: "redis:7.0-alpine"
+    networks:
+      - container_localnet
+    ports:
+      - 6379:6379
+
+networks:
+  container_localnet:
+    external: true
+
+volumes:
+   pg-data:
+   pgadmin_data:
+   storage-volume:
